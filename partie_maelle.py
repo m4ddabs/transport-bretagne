@@ -6,6 +6,9 @@ from bokeh.layouts import column, row
 from pandas import DataFrame
 import numpy as np
 import json
+from bokeh.models import Tabs, TabPanel
+from bokeh.models import ColorPicker, Spinner
+from bokeh.models import CustomJS
 
 ### Importation des données
  
@@ -57,20 +60,20 @@ data = analyse_data(breizh_go)
 print(data.iloc[0])
 
 
-# couleur = DataFrame([{'saison':"annuelle", 'couleur':"red"},
-#                      {'saison':"scolaire", 'couleur':"orange"},
-#                      {'saison':"été", 'couleur':"blue"}, 
-#                      {'saison':"hors été", 'couleur':"brown"}])
+couleur = DataFrame([{'saison':"annuelle", 'couleur':"red"},
+                     {'saison':"scolaire", 'couleur':"orange"},
+                     {'saison':"été", 'couleur':"blue"}, 
+                     {'saison':"hors été", 'couleur':"brown"}])
 
-# data = data.merge(couleur, left_on = "saison", right_on = "saison")
-# print(data.iloc[0])
+data = data.merge(couleur, left_on = "saison", right_on = "saison")
+print(data.iloc[0])
 
 
 #On convertit le DataFrame en ColumnDataSource
 source = ColumnDataSource(data)
 
 #On crée la carte avec fond de carte
-p = figure(x_axis_type="mercator", y_axis_type="mercator", active_scroll="wheel_zoom", title="Lignes du réseau Breizh Go")
+p = figure(x_axis_type="mercator", y_axis_type="mercator", active_scroll="wheel_zoom", title="Lignes du réseau Breizh Go", toolbar_location="below")
 p.add_tile("OSM")
 
 p.multi_line(xs = "x", ys = "y", source = source, color = "blue", line_width = 3)
@@ -81,32 +84,51 @@ p.add_tools(hover_tool)
 
 ### Carte gares
 
-# def analyse_data2(data):
-#     #Construction d'un dataframe : une colonne denomination, une colonne trafic, une colonne coordonnéees
-#     nom_gare = []
-#     ville = []
-#     coordsx = []  
-#     coordsy = []  
+def analyse_data2(data):
+    #Construction d'un dataframe : une colonne denomination, une colonne trafic, une colonne coordonnéees
+    nom_gare = []
+    ville = []
+    coordsx = []  
+    coordsy = []  
 
-#     for ligne in data:
-#         nom_gare.append(ligne["nom"])
-#         ville.append(ligne["commune"])
-#         coords = ligne["geometry"]["coordinates"]
-#         c_x=[]
-#         c_y=[]
-#         for c in coords[0] :
-#             x,y = coor_wgs84_to_web_mercator(c[0],c[1])
-#             c_x.append(x)
-#             c_y.append(y)
-#         coordsx.append(c_x)
-#         coordsy.append(c_y)
+    for gare in data:
+        nom_gare.append(gare["nom"])
+        ville.append(gare["commune"])
+        coords = gare["geo_point_2d"]
+        x,y = coor_wgs84_to_web_mercator(coords["lon"], coords["lat"])
+        coordsx.append(x)
+        coordsy.append(y)
 
-#     df = DataFrame({'nom_gare': nom_gare, 'ville': ville, 'x':coordsx,'y':coordsy})
-#     return df
+    df = DataFrame({'nom_gare': nom_gare, 'ville': ville, 'x':coordsx,'y':coordsy})
+    return df
 
-# donnees = analyse_data2(gares_bretagne)
-# print(donnees.iloc[0])
+donnees = analyse_data2(gares_bretagne)
+print(donnees.iloc[0])
 
+source2 = ColumnDataSource(donnees)
+
+#On crée la carte avec fond de carte
+carte = figure(x_axis_type="mercator", y_axis_type="mercator", active_scroll="wheel_zoom", title="Gares de la région Bretagne", toolbar_location="below")
+carte.add_tile("OSM")
+carte.title.text_color='blue'
+
+picker1 = ColorPicker(title = "Couleur des points", color = "red") 
+
+# Points sur la carte
+cercles = carte.circle(x = "x", y = "y", source = source2, size = 5, fill_color = "red")
+
+callback = CustomJS(args=dict(cercles =cercles, picker1=picker1), code="""
+    cercles.glyph.fill_color = picker1.color;
+""")
+
+picker1.js_on_change('color', callback)
+
+# Outil de survol qui affiche le nom de la gare et la commune
+hover_tool2 = HoverTool(tooltips=[( 'Nom de la gare', '@nom_gare'),( 'Commune', '@ville')])
+carte.add_tools(hover_tool2)
+
+#Construction du layout
+layout2 = row(carte, column (picker1))
 
 
 ######### Mise en page
@@ -119,4 +141,11 @@ par = Paragraph(text = "Indications pour ce premier graphique : )")
 
 layout = row(p, column (div, par))
 
-show(layout)
+# show(layout)
+
+tab1 = TabPanel(child=layout, title="Réseau BreizhGo")
+tab2 = TabPanel(child=layout2, title="Gares de Bretagne")
+tabs = Tabs(tabs = [tab1, tab2])
+
+#Sortie
+show(tabs)

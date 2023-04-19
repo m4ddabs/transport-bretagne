@@ -1,5 +1,5 @@
 from bokeh.plotting import figure, show, ColumnDataSource
-from bokeh.models import HoverTool, Column, Div, Row, Div, Paragraph
+from bokeh.models import HoverTool, Column, Div, Row, Div, Paragraph, NumeralTickFormatter
 import pandas as pd
 from bokeh.palettes import Set1
 from bokeh.layouts import column, row
@@ -45,36 +45,38 @@ hovertool = HoverTool(
 
 p = figure(width=1200, 
            height=400, 
-           title="Titre",
+           title="Nombre de passagers dans les ports de Saint-Malo et Roscoff par mois",
            x_axis_type = "datetime",
-           background_fill_color = "#00100B") 
+           background_fill_color = "#EDE8E9") 
+
+p.yaxis[0].formatter = NumeralTickFormatter(format="0.")
 
 p.line(x = "date", 
        y = "nombre_de_passagers",
        source = source1,
-       color = "green",
+       color = "#CA054D",
        line_width = 3,
        legend_label = 'Roscoff')
 
 p.circle(x = "date", 
          y = "nombre_de_passagers", 
          source = source1,
-         fill_color="#00100B", 
-         color = "green",
+         fill_color="#EDE8E9", 
+         color = "#CA054D",
          size=8)
 
 p.line(x = "date", 
        y = "nombre_de_passagers",
        source = source2,
-       color = "purple",
+       color = "#3B1C32",
        line_width = 3,
        legend_label = 'Saint-Malo')
 
 p.circle(x = "date", 
          y = "nombre_de_passagers", 
          source = source2,
-         fill_color="#00100B", 
-         color = "purple",
+         fill_color="#EDE8E9", 
+         color = "#3B1C32",
          size=8)
 
 
