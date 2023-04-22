@@ -43,36 +43,36 @@ hovertool = HoverTool(
     }
 )
 
-p = figure(width=1200, 
+p2 = figure(width=1200, 
            height=400, 
            title="Nombre de passagers dans les ports de Saint-Malo et Roscoff par mois",
            x_axis_type = "datetime",
            background_fill_color = "#EDE8E9") 
 
-p.yaxis[0].formatter = NumeralTickFormatter(format="0.")
+p2.yaxis[0].formatter = NumeralTickFormatter(format="0.")
 
-p.line(x = "date", 
+p2.line(x = "date", 
        y = "nombre_de_passagers",
        source = source1,
        color = "#CA054D",
        line_width = 3,
        legend_label = 'Roscoff')
 
-p.circle(x = "date", 
+p2.circle(x = "date", 
          y = "nombre_de_passagers", 
          source = source1,
          fill_color="#EDE8E9", 
          color = "#CA054D",
          size=8)
 
-p.line(x = "date", 
+p2.line(x = "date", 
        y = "nombre_de_passagers",
        source = source2,
        color = "#3B1C32",
        line_width = 3,
        legend_label = 'Saint-Malo')
 
-p.circle(x = "date", 
+p2.circle(x = "date", 
          y = "nombre_de_passagers", 
          source = source2,
          fill_color="#EDE8E9", 
@@ -80,7 +80,7 @@ p.circle(x = "date",
          size=8)
 
 
-p.add_tools(hovertool)
+p2.add_tools(hovertool)
 
-show(p)
+show(p2)
  
